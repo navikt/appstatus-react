@@ -32,6 +32,7 @@ function useTeamStatus(teamKey?: string): TeamState {
     const [status, setStatus] = useState<TeamStatus | undefined>();
     const [message, setMessage] = useState<SanityStatusMessage | undefined>();
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [error, setError] = useState<any>();
 
     const subscription = useRef<any>();
 
@@ -46,6 +47,7 @@ function useTeamStatus(teamKey?: string): TeamState {
                 setMessage(getMessage(team.message));
             }
         } catch (error) {
+            setError(error);
             setStatus(undefined);
             setMessage(undefined);
         } finally {
@@ -70,6 +72,10 @@ function useTeamStatus(teamKey?: string): TeamState {
     const prevTeamKey = usePrevious(teamKey);
 
     useEffect(() => {
+        if (error) {
+            stopSubscription();
+            return;
+        }
         if (teamKey) {
             fetch(teamKey);
             if (!subscription.current) {
@@ -83,7 +89,7 @@ function useTeamStatus(teamKey?: string): TeamState {
         if (teamKey === undefined) {
             stopSubscription();
         }
-    }, [teamKey, prevTeamKey]);
+    }, [teamKey, prevTeamKey, error]);
 
     return { status, message, isLoading };
 }

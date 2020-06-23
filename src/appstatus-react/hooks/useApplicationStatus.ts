@@ -51,6 +51,7 @@ function useApplicationStatus(applicationKey: string): AppStatus {
     const [application, setApplication] = useState<ApplicationSanityQueryResult | undefined>();
     const [applicationTeam, setApplicationTeam] = useState<string>();
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [error, setError] = useState<any>();
 
     const subscription = useRef<any>();
 
@@ -66,6 +67,7 @@ function useApplicationStatus(applicationKey: string): AppStatus {
                 setApplicationTeam(appResult.team?.key);
             }
         } catch (error) {
+            setError(error);
             setApplication(undefined);
             setApplicationTeam(undefined);
         } finally {
@@ -92,6 +94,10 @@ function useApplicationStatus(applicationKey: string): AppStatus {
     };
 
     useEffect(() => {
+        if (error) {
+            stopSubscription();
+            return;
+        }
         if (applicationKey && applicationKey !== prevApplicationKey) {
             fetch(applicationKey);
             if (!subscription.current) {
@@ -104,7 +110,7 @@ function useApplicationStatus(applicationKey: string): AppStatus {
         if (applicationKey === undefined) {
             stopSubscription();
         }
-    }, [applicationKey, prevApplicationKey]);
+    }, [applicationKey, prevApplicationKey, error]);
 
     useEffect(() => {
         if (application) {
