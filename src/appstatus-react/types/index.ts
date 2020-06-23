@@ -1,12 +1,28 @@
+import { SanityStatusMessage } from './sanityObjects';
+
 export enum Status {
     'normal' = 'normal',
     'unstable' = 'unstable',
     'unavailable' = 'unavailable',
 }
+
+export type TeamStatus = Status;
+
+export type ApplicationStatus = Status | ApplicationInheritTeamStatus;
+
+export enum ApplicationInheritTeamStatus {
+    'team' = 'team',
+}
+
 export enum SanityMessageType {
     'info' = 'info',
     'warning' = 'warning',
     'error' = 'error',
+}
+
+export interface AppState {
+    status: Status;
+    message?: SanityStatusMessage;
 }
 
 export type StringBlockValue = string | string[];

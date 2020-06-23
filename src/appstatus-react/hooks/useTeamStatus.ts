@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { TeamStatus } from '../types';
 import { SanityStatusMessage } from '../types/sanityObjects';
 import { getMessage } from '../utils';
 import appSanityClient from '../utils/sanityClient';
@@ -11,26 +12,26 @@ const getTeamStatusQuery = (key: string): string => {
       }`;
 };
 
-enum Status {
-    'normal' = 'normal',
-    'unstable' = 'unstable',
-    'unavailable' = 'unavailable',
-}
-
 interface TeamStatusResult {
     key: string;
     name: string;
     teamApplicationStatus: {
         type: '_teamApplicationStatus';
-        status: Status;
+        status: TeamStatus;
     };
     message?: SanityStatusMessage[];
 }
 
-function useTeamStatus(teamKey?: string) {
-    const [teamStatus, setTeamStatus] = useState<Status | undefined>();
-    const [teamMessage, setTeamMessage] = useState<SanityStatusMessage | undefined>();
-    const [isLoading, setIsLoading] = useState<boolean>(true);
+export interface TeamState {
+    status?: TeamStatus;
+    message?: SanityStatusMessage;
+    isLoading: boolean;
+}
+function useTeamStatus(teamKey?: string): TeamState {
+    const [status, setStatus] = useState<TeamStatus | undefined>();
+    const [message, setMessage] = useState<SanityStatusMessage | undefined>();
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+
     const subscription = useRef<any>();
 
     async function fetch(key: string) {
@@ -40,12 +41,12 @@ function useTeamStatus(teamKey?: string) {
             const result: TeamStatusResult[] = await appSanityClient.fetch(query);
             if (result.length === 1) {
                 const team = result[0];
-                setTeamStatus(team.teamApplicationStatus.status);
-                setTeamMessage(getMessage(team.message));
+                setStatus(team.teamApplicationStatus.status);
+                setMessage(getMessage(team.message));
             }
         } catch (error) {
-            setTeamStatus(undefined);
-            setTeamMessage(undefined);
+            setStatus(undefined);
+            setMessage(undefined);
         } finally {
             setIsLoading(false);
         }
@@ -54,24 +55,21 @@ function useTeamStatus(teamKey?: string) {
         const query = getTeamStatusQuery(key);
         subscription.current = appSanityClient.listen(query).subscribe(({ result }) => {
             const team = (result as any) as TeamStatusResult;
-            setTeamStatus(team.teamApplicationStatus.status);
-            setTeamMessage(getMessage(team.message));
+            setStatus(team.teamApplicationStatus.status);
+            setMessage(getMessage(team.message));
         });
     };
 
     useEffect(() => {
         if (teamKey) {
             fetch(teamKey);
-            startSubscription(teamKey);
-        }
-        return function cleanup() {
-            if (subscription.current && subscription.current.unsubscribe) {
-                subscription.current.unsubscribe();
+            if (!subscription.current) {
+                startSubscription(teamKey);
             }
-        };
+        }
     }, [teamKey]);
 
-    return { teamStatus, teamMessage, isLoading };
+    return { status, message, isLoading };
 }
 
 export default useTeamStatus;

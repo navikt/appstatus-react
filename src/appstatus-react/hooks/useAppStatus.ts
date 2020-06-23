@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { Status } from '../types';
+import { Status, ApplicationStatus } from '../types';
 import { SanityStatusMessage } from '../types/sanityObjects';
 import { getMessage } from '../utils';
 import appSanityClient from '../utils/sanityClient';
-import useTeamStatus from './useTeamStatus';
 
 const getApplicationDocumentStatusQuery = (key: string, team?: string): string => {
     const teamQuery = team ? `team->.key == "${team}"` : '';
@@ -12,63 +11,54 @@ const getApplicationDocumentStatusQuery = (key: string, team?: string): string =
         applicationStatus,
         message,
         name,
-        team->{key, name, teamApplicationStatus}
+        team->{key}
       }`;
 };
 
-enum InheritStatus {
-    'team' = 'team',
-}
-
-interface ApplicationResult {
+interface ApplicationSanityQueryResult {
     key: string;
     name: string;
     applicationStatus: {
         type: '_applicationStatus';
-        status: InheritStatus | Status;
+        status: ApplicationStatus;
     };
     message: SanityStatusMessage[];
     team?: {
         key: string;
-        name: string;
-        teamApplicationStatus?: {
-            type: '_teamApplicationStatus';
-            status: Status;
-        };
-        message: SanityStatusMessage[];
     };
 }
 
-interface AggregatedState {
-    status: Status;
+interface ApplicationState {
+    status: ApplicationStatus;
     message?: SanityStatusMessage;
 }
 
-const defaultState: AggregatedState = {
+const defaultState: ApplicationState = {
     status: Status.normal,
     message: undefined,
 };
 
-interface AppStatus {
+export interface AppStatus {
+    team?: string;
     isLoading: boolean;
-    status: Status;
     message?: SanityStatusMessage;
+    status: ApplicationStatus;
 }
 
 function useAppStatus(applicationKey: string): AppStatus {
-    const [state, setState] = useState<AggregatedState>(defaultState);
-    const [application, setApplication] = useState<ApplicationResult | undefined>();
-    const [applicationTeam, setApplicationTeam] = useState<any>();
+    const [state, setState] = useState<ApplicationState>(defaultState);
+    const [application, setApplication] = useState<ApplicationSanityQueryResult | undefined>();
+    const [applicationTeam, setApplicationTeam] = useState<string>();
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     const subscription = useRef<any>();
 
-    const { teamMessage, teamStatus } = useTeamStatus(applicationTeam);
-
     async function fetch(key: string) {
         setIsLoading(true);
         try {
-            const result: ApplicationResult[] = await appSanityClient.fetch(getApplicationDocumentStatusQuery(key));
+            const result: ApplicationSanityQueryResult[] = await appSanityClient.fetch(
+                getApplicationDocumentStatusQuery(key)
+            );
             if (result.length === 1) {
                 const appResult = result[0];
                 setApplication(appResult);
@@ -86,46 +76,29 @@ function useAppStatus(applicationKey: string): AppStatus {
         subscription.current = appSanityClient
             .listen(getApplicationDocumentStatusQuery(key))
             .subscribe(({ result }) => {
-                const appResult = (result as any) as ApplicationResult;
+                const appResult = (result as any) as ApplicationSanityQueryResult;
                 setApplication(appResult);
-                setApplicationTeam(appResult.team);
+                setApplicationTeam(appResult.team?.key);
             });
     };
 
     useEffect(() => {
         fetch(applicationKey);
-        startSubscription(applicationKey);
-        return function cleanup() {
-            if (subscription.current && subscription.current.unsubscribe) {
-                subscription.current.unsubscribe();
-            }
-        };
+        if (!subscription.current) {
+            startSubscription(applicationKey);
+        }
     }, [applicationKey]);
 
     useEffect(() => {
-        const { applicationStatus, message } = application || {};
-        if (applicationStatus) {
-            if (
-                applicationStatus.status === InheritStatus.team &&
-                teamStatus !== undefined &&
-                teamStatus !== undefined
-            ) {
-                setState({
-                    status: teamStatus,
-                    message: teamMessage || getMessage(message),
-                });
-            } else if (applicationStatus.status !== InheritStatus.team) {
-                setState({
-                    status: applicationStatus.status,
-                    message: getMessage(message) || teamMessage,
-                });
-            }
-        } else {
-            setState(defaultState);
+        if (application) {
+            setState({
+                status: application.applicationStatus.status,
+                message: getMessage(application.message),
+            });
         }
-    }, [teamMessage, teamStatus, application]);
+    }, [application]);
 
-    return { ...state, isLoading };
+    return { ...state, team: applicationTeam, isLoading };
 }
 
 export default useAppStatus;
