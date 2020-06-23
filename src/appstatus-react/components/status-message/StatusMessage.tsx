@@ -8,6 +8,7 @@ import './statusMessage.less';
 
 interface Props {
     message: SanityStatusMessage;
+    wrapInAlertStripe?: boolean;
     locale?: SanityLocale;
 }
 
@@ -24,15 +25,18 @@ const getAlertStripeTypeFromMessageType = (type?: SanityMessageType): AlertStrip
     }
 };
 
-const StatusMessage = ({ message, locale = 'nb' }: Props) => {
+const StatusMessage = ({ message, locale = 'nb', wrapInAlertStripe = true }: Props) => {
     const info = getLocaleBlockContent(message.message, locale);
     if (!info || info.length === 0) {
         return null;
     }
-    return (
+    const content = <SanityBlock content={info} />;
+    return wrapInAlertStripe ? (
         <AlertStripe type={getAlertStripeTypeFromMessageType(message.messageType)} className="statusMessage">
-            <SanityBlock content={info} />
+            {content}
         </AlertStripe>
+    ) : (
+        <>{content}</>
     );
 };
 

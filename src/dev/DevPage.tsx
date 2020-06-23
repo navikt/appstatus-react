@@ -1,10 +1,12 @@
-import React from 'react';
-import ApplicationStatus from '../appstatus-react/components/application-status/ApplicationStatus';
+import React, { useState } from 'react';
+import ApplicationStatus from './components/application-status/ApplicationStatus';
 import { Systemtittel } from 'nav-frontend-typografi';
+import { Flatknapp } from 'nav-frontend-knapper';
 import NAVLogo from './components/svg/NAVLogo';
 import './styles/dev.less';
 
 const DevPage = () => {
+    const [app, setApp] = useState<string>('pleiepengesoknad');
     return (
         <main className="devPage">
             <header className="header">
@@ -17,7 +19,9 @@ const DevPage = () => {
             </header>
             <div className="contentWrapper">
                 <h2>Applikasjonsstatus hentet fra Sanity</h2>
-                <ApplicationStatus applicationKey="pleiepengesoknad" />
+                <ApplicationStatus applicationKey={app} />
+                <Flatknapp onClick={() => setApp('pleiepengesoknad')}>Pleiepengesøknad</Flatknapp>
+                <Flatknapp onClick={() => setApp('foreldrepengesoknad')}>Foreldrepengersøknad</Flatknapp>
             </div>
         </main>
     );

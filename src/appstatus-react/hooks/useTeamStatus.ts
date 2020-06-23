@@ -3,6 +3,7 @@ import { TeamStatus } from '../types';
 import { SanityStatusMessage } from '../types/sanityObjects';
 import { getMessage } from '../utils';
 import appSanityClient from '../utils/sanityClient';
+import { usePrevious } from './usePrevious';
 
 const getTeamStatusQuery = (key: string): string => {
     return `*[_type == 'team' && key == "${key}"]{
@@ -60,14 +61,29 @@ function useTeamStatus(teamKey?: string): TeamState {
         });
     };
 
+    const stopSubscription = () => {
+        if (subscription.current && subscription.current.unsubscribe) {
+            subscription.current.unsubscribe();
+        }
+    };
+
+    const prevTeamKey = usePrevious(teamKey);
+
     useEffect(() => {
         if (teamKey) {
             fetch(teamKey);
             if (!subscription.current) {
                 startSubscription(teamKey);
             }
+            if (subscription.current && prevTeamKey !== teamKey) {
+                stopSubscription();
+                startSubscription(teamKey);
+            }
         }
-    }, [teamKey]);
+        if (teamKey === undefined) {
+            stopSubscription();
+        }
+    }, [teamKey, prevTeamKey]);
 
     return { status, message, isLoading };
 }

@@ -1,2 +1,2 @@
 export { default as useAppStatus } from './hooks/useAppStatus';
-export { default as useTeamStatus } from './hooks/useTeamStatus';
+export { default as StatusMessage } from './components/status-message/StatusMessage';

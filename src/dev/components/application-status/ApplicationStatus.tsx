@@ -1,13 +1,13 @@
 import React from 'react';
-import StatusMessage from '../status-message/StatusMessage';
-import useAppAndTeamStatus from '../../hooks/useAppAndTeamStatus';
+import StatusMessage from '../../../appstatus-react/components/status-message/StatusMessage';
+import useAppStatus from '../../../appstatus-react/hooks/useAppStatus';
 
 interface Props {
     applicationKey: string;
 }
 
 const ApplicationStatus = ({ applicationKey }: Props) => {
-    const { isLoading, status, message } = useAppAndTeamStatus(applicationKey);
+    const { isLoading, status, message } = useAppStatus(applicationKey);
     if (isLoading) {
         return <div>Laster</div>;
     }
