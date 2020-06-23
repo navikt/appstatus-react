@@ -25,6 +25,15 @@ export interface AppState {
     message?: SanityStatusMessage;
 }
 
+export interface SanityError {
+    isNetworkError: boolean;
+    request: {
+        uri: string;
+    };
+    message: string;
+    stack: string;
+}
+
 export type StringBlockValue = string | string[];
 export type BlockContentType = string | string[];
 

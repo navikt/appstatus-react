@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Status, ApplicationStatus } from '../types';
+import { Status, ApplicationStatus, SanityError } from '../types';
 import { SanityStatusMessage } from '../types/sanityObjects';
 import { getMessage } from '../utils';
 import appSanityClient from '../utils/sanityClient';
@@ -44,6 +44,7 @@ export interface AppStatus {
     isLoading: boolean;
     message?: SanityStatusMessage;
     status: ApplicationStatus;
+    error?: SanityError;
 }
 
 function useApplicationStatus(applicationKey: string): AppStatus {
@@ -51,7 +52,7 @@ function useApplicationStatus(applicationKey: string): AppStatus {
     const [application, setApplication] = useState<ApplicationSanityQueryResult | undefined>();
     const [applicationTeam, setApplicationTeam] = useState<string>();
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [error, setError] = useState<any>();
+    const [error, setError] = useState<SanityError>();
 
     const subscription = useRef<any>();
 
@@ -121,7 +122,7 @@ function useApplicationStatus(applicationKey: string): AppStatus {
         }
     }, [application]);
 
-    return { ...state, team: applicationTeam, isLoading };
+    return { ...state, team: applicationTeam, isLoading, error };
 }
 
 export default useApplicationStatus;

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { TeamStatus } from '../types';
+import { TeamStatus, SanityError } from '../types';
 import { SanityStatusMessage } from '../types/sanityObjects';
 import { getMessage } from '../utils';
 import appSanityClient from '../utils/sanityClient';
@@ -26,13 +26,14 @@ interface TeamStatusResult {
 export interface TeamState {
     status?: TeamStatus;
     message?: SanityStatusMessage;
+    error?: SanityError;
     isLoading: boolean;
 }
 function useTeamStatus(teamKey?: string): TeamState {
     const [status, setStatus] = useState<TeamStatus | undefined>();
     const [message, setMessage] = useState<SanityStatusMessage | undefined>();
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [error, setError] = useState<any>();
+    const [error, setError] = useState<SanityError | undefined>();
 
     const subscription = useRef<any>();
 
@@ -91,7 +92,7 @@ function useTeamStatus(teamKey?: string): TeamState {
         }
     }, [teamKey, prevTeamKey, error]);
 
-    return { status, message, isLoading };
+    return { status, message, isLoading, error };
 }
 
 export default useTeamStatus;
