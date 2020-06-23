@@ -1,0 +1,117 @@
+{
+    "name": "@navikt/appstatus-react",
+    "version": "0.0.1",
+    "private": false,
+    "scripts": {
+        "dev": "craco start",
+        "test": "jest --maxWorkers=2 --config ./jest/jest.config.js",
+        "eject": "react-scripts eject",
+        "build-lib": "npm-run-all clean-lib compile-lib-script copy-files-to-lib",
+        "clean-lib": "rimraf ./lib",
+        "compile-lib-script": "tsc -p tsconfig-build-lib.json",
+        "copy-files-to-lib": "copyfiles -u 2 \"src/appstatus-react/**/*.less\" lib",
+        "build-dev-app": "craco build",
+        "predeploy": "npm run build-dev-app",
+        "deploy": "gh-pages -d build",
+        "commit": "git-cz"
+    },
+    "dependencies": {
+        "@sanity/block-content-to-react": "^2.0.7",
+        "@sanity/client": "^1.149.16",
+        "nav-frontend-alertstriper": "^3.0.18"
+    },
+    "peerDependencies": {
+        "nav-frontend-lenker": "^1.0.37",
+        "nav-frontend-lenker-style": "^0.2.28",
+        "react": "^16.12.0"
+    },
+    "devDependencies": {
+        "@craco/craco": "^5.6.3",
+        "@formatjs/intl-pluralrules": "^1.5.9",
+        "@navikt/sif-common-core": "^4.0.11",
+        "@testing-library/jest-dom": "^5.9.0",
+        "@testing-library/react": "^9.5.0",
+        "@testing-library/user-event": "^8.1.0",
+        "@types/jest": "^25.2.3",
+        "@types/node": "^13.13.12",
+        "@types/react": "^16.9.36",
+        "@types/react-dom": "^16.9.8",
+        "@typescript-eslint/eslint-plugin": "^2.34.0",
+        "@typescript-eslint/parser": "^2.34.0",
+        "axios": "^0.19.2",
+        "canvas": "^2.6.1",
+        "classnames": "^2.2.6",
+        "commitizen": "^4.1.2",
+        "copyfiles": "^2.3.0",
+        "core-js": "^3.6.5",
+        "craco-less": "^1.17.0",
+        "cz-conventional-changelog": "^3.2.0",
+        "enzyme": "^3.11.0",
+        "enzyme-adapter-react-16": "^1.15.2",
+        "eslint": "^6.8.0",
+        "eslint-config-prettier": "^6.10.1",
+        "eslint-plugin-jsx-a11y": "^6.2.3",
+        "eslint-plugin-prettier": "^3.1.2",
+        "eslint-plugin-react": "^7.19.0",
+        "gh-pages": "^2.2.0",
+        "intl": "^1.2.5",
+        "jest": "^25.5.4",
+        "jest-css-modules": "^2.1.0",
+        "less-plugin-npm-import": "^2.1.0",
+        "moment": "^2.26.0",
+        "nav-frontend-alertstriper-style": "^2.0.16",
+        "npm-run-all": "^4.1.5",
+        "prettier": "^2.0.5",
+        "react": "^16.12.0",
+        "react-collapse": "^5.0.1",
+        "react-dom": "^16.12.0",
+        "react-intl": "^4.6.9",
+        "react-scripts": "3.4.0",
+        "rimraf": "^3.0.2",
+        "ts-jest": "^25.5.1",
+        "typescript": "^3.9.5"
+    },
+    "jest": {
+        "testEnvironment": "node"
+    },
+    "eslintConfig": {
+        "extends": "react-app"
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    },
+    "files": [
+        "package.json",
+        "/lib"
+    ],
+    "description": "Sanity utils for sykdom i familien",
+    "directories": {
+        "lib": "lib"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/navikt/appstatus-react.git"
+    },
+    "author": "navikt",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/navikt/appstatus-react/issues"
+    },
+    "homepage": "https://navikt.github.io/appstatus-react",
+    "main": "lib/index.js",
+    "types": "lib/index.d.js",
+    "config": {
+        "commitizen": {
+            "path": "./node_modules/cz-conventional-changelog"
+        }
+    }
+}
