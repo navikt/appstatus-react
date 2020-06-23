@@ -1,7 +1,6 @@
 import React from 'react';
 import useAppStatus from '../../hooks/useAppStatus';
-import SanityBlock from '../sanity-block/SanityBlock';
-import { getLocaleBlockContent } from '../../utils';
+import StatusMessage from '../status-message/StatusMessage';
 
 interface Props {
     applicationKey: string;
@@ -15,7 +14,7 @@ const ApplicationStatus = ({ applicationKey }: Props) => {
     return (
         <div>
             {status}
-            {message && <SanityBlock content={getLocaleBlockContent(message)} />}
+            {message && <StatusMessage message={message} />}
         </div>
     );
 };

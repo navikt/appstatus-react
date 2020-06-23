@@ -1,11 +1,13 @@
-import { useEffect, useState, useRef } from 'react';
-import appStatusSanityClient from '../utils/appStatusSanityClient';
-import { LocaleRichTextObject } from '../types';
+import { useEffect, useRef, useState } from 'react';
+import { SanityStatusMessage } from '../types/sanityObjects';
+import { getMessage } from '../utils';
+import appSanityClient from '../utils/sanityClient';
 
 const getTeamStatusQuery = (key: string): string => {
     return `*[_type == 'team' && key == "${key}"]{
         key,
         teamApplicationStatus,
+        message,
       }`;
 };
 
@@ -22,12 +24,12 @@ interface TeamStatusResult {
         type: '_teamApplicationStatus';
         status: Status;
     };
-    message?: LocaleRichTextObject;
+    message?: SanityStatusMessage[];
 }
 
 function useTeamStatus(teamKey?: string) {
     const [teamStatus, setTeamStatus] = useState<Status | undefined>();
-    const [teamMessage, setTeamMessage] = useState<LocaleRichTextObject | undefined>();
+    const [teamMessage, setTeamMessage] = useState<SanityStatusMessage | undefined>();
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const subscription = useRef<any>();
 
@@ -35,10 +37,11 @@ function useTeamStatus(teamKey?: string) {
         const query = getTeamStatusQuery(key);
         setIsLoading(true);
         try {
-            const result: TeamStatusResult[] = await appStatusSanityClient.fetch(query);
+            const result: TeamStatusResult[] = await appSanityClient.fetch(query);
             if (result.length === 1) {
-                setTeamStatus(result[0].teamApplicationStatus.status);
-                setTeamMessage(result[0].message);
+                const team = result[0];
+                setTeamStatus(team.teamApplicationStatus.status);
+                setTeamMessage(getMessage(team.message));
             }
         } catch (error) {
             setTeamStatus(undefined);
@@ -49,9 +52,10 @@ function useTeamStatus(teamKey?: string) {
     }
     const startSubscription = (key: string) => {
         const query = getTeamStatusQuery(key);
-        subscription.current = appStatusSanityClient.listen(query).subscribe(({ result }) => {
-            setTeamStatus(((result as any) as TeamStatusResult).teamApplicationStatus.status);
-            setTeamMessage(((result as any) as TeamStatusResult).message);
+        subscription.current = appSanityClient.listen(query).subscribe(({ result }) => {
+            const team = (result as any) as TeamStatusResult;
+            setTeamStatus(team.teamApplicationStatus.status);
+            setTeamMessage(getMessage(team.message));
         });
     };
 

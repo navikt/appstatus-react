@@ -1,8 +1,7 @@
 import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import ApplicationStatus from '../appstatus-react/components/application-status/ApplicationStatus';
 import { Systemtittel } from 'nav-frontend-typografi';
 import NAVLogo from './components/svg/NAVLogo';
-import DevContent from './DevContent';
 import './styles/dev.less';
 
 const DevPage = () => {
@@ -17,9 +16,8 @@ const DevPage = () => {
                 </span>
             </header>
             <div className="contentWrapper">
-                <BrowserRouter>
-                    <DevContent />
-                </BrowserRouter>
+                <h2>Applikasjonsstatus hentet fra Sanity</h2>
+                <ApplicationStatus applicationKey="pleiepengesoknad" />
             </div>
         </main>
     );

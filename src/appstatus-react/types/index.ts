@@ -1,19 +1,24 @@
+export enum Status {
+    'normal' = 'normal',
+    'unstable' = 'unstable',
+    'unavailable' = 'unavailable',
+}
+export enum SanityMessageType {
+    'info' = 'info',
+    'warning' = 'warning',
+    'error' = 'error',
+}
+
 export type StringBlockValue = string | string[];
 export type BlockContentType = string | string[];
 
-export type Locale = 'nb' | 'nn';
+export type SanityLocale = 'nb' | 'nn';
 
-export const defaultLocale: Locale = 'nb';
+export const sanityDefaultLocale: SanityLocale = 'nb';
 
 export interface LocaleStringObject {
     nb: string;
     nn?: string;
-}
-
-export enum SYSTEM_MESSAGE_TYPE {
-    info = 'info',
-    alert = 'alert',
-    unavailable = 'unavailable',
 }
 
 export interface LocaleRichTextObject {
@@ -24,7 +29,7 @@ export interface LocaleRichTextObject {
 export type LocaleObject = LocaleStringObject | LocaleRichTextObject;
 
 export const isValidLocaleObject = (obj: any): obj is LocaleObject =>
-    obj !== undefined && obj[defaultLocale] !== undefined;
+    obj !== undefined && obj[sanityDefaultLocale] !== undefined;
 
 export const isValidLocaleStringObject = (obj: any): obj is LocaleStringObject =>
-    obj !== undefined && obj[defaultLocale] !== undefined && typeof obj[defaultLocale] === 'string';
+    obj !== undefined && obj[sanityDefaultLocale] !== undefined && typeof obj[sanityDefaultLocale] === 'string';

@@ -1,13 +1,16 @@
-import { useEffect, useState, useRef } from 'react';
-import appStatusSanityClient from '../utils/appStatusSanityClient';
+import { useEffect, useRef, useState } from 'react';
+import { Status } from '../types';
+import { SanityStatusMessage } from '../types/sanityObjects';
+import { getMessage } from '../utils';
+import appSanityClient from '../utils/sanityClient';
 import useTeamStatus from './useTeamStatus';
-import { LocaleRichTextObject } from '../types';
 
 const getApplicationDocumentStatusQuery = (key: string, team?: string): string => {
     const teamQuery = team ? `team->.key == "${team}"` : '';
     return `*[_type == 'application' && key == "${key}"${teamQuery}]{
         key,
         applicationStatus,
+        message,
         name,
         team->{key, name, teamApplicationStatus}
       }`;
@@ -17,20 +20,14 @@ enum InheritStatus {
     'team' = 'team',
 }
 
-enum Status {
-    'normal' = 'normal',
-    'unstable' = 'unstable',
-    'unavailable' = 'unavailable',
-}
-
 interface ApplicationResult {
     key: string;
     name: string;
     applicationStatus: {
         type: '_applicationStatus';
-        message: LocaleRichTextObject;
         status: InheritStatus | Status;
     };
+    message: SanityStatusMessage[];
     team?: {
         key: string;
         name: string;
@@ -38,12 +35,13 @@ interface ApplicationResult {
             type: '_teamApplicationStatus';
             status: Status;
         };
+        message: SanityStatusMessage[];
     };
 }
 
 interface AggregatedState {
     status: Status;
-    message?: LocaleRichTextObject;
+    message?: SanityStatusMessage;
 }
 
 const defaultState: AggregatedState = {
@@ -54,28 +52,23 @@ const defaultState: AggregatedState = {
 interface AppStatus {
     isLoading: boolean;
     status: Status;
-    message?: LocaleRichTextObject;
+    message?: SanityStatusMessage;
 }
+
 function useAppStatus(applicationKey: string): AppStatus {
     const [state, setState] = useState<AggregatedState>(defaultState);
-
-    // const [status, setStatus] = useState<Status | undefined>();
-    // const [message, setMessage] = useState<LocaleRichTextObject | undefined>();
-
     const [application, setApplication] = useState<ApplicationResult | undefined>();
     const [applicationTeam, setApplicationTeam] = useState<any>();
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     const subscription = useRef<any>();
+
     const { teamMessage, teamStatus } = useTeamStatus(applicationTeam);
 
     async function fetch(key: string) {
-        console.log('fetch');
         setIsLoading(true);
         try {
-            const result: ApplicationResult[] = await appStatusSanityClient.fetch(
-                getApplicationDocumentStatusQuery(key)
-            );
+            const result: ApplicationResult[] = await appSanityClient.fetch(getApplicationDocumentStatusQuery(key));
             if (result.length === 1) {
                 const appResult = result[0];
                 setApplication(appResult);
@@ -90,8 +83,7 @@ function useAppStatus(applicationKey: string): AppStatus {
     }
 
     const startSubscription = (key: string) => {
-        console.log('sub');
-        subscription.current = appStatusSanityClient
+        subscription.current = appSanityClient
             .listen(getApplicationDocumentStatusQuery(key))
             .subscribe(({ result }) => {
                 const appResult = (result as any) as ApplicationResult;
@@ -101,7 +93,6 @@ function useAppStatus(applicationKey: string): AppStatus {
     };
 
     useEffect(() => {
-        console.log('init');
         fetch(applicationKey);
         startSubscription(applicationKey);
         return function cleanup() {
@@ -112,8 +103,7 @@ function useAppStatus(applicationKey: string): AppStatus {
     }, [applicationKey]);
 
     useEffect(() => {
-        console.log('effect');
-        const { applicationStatus } = application || {};
+        const { applicationStatus, message } = application || {};
         if (applicationStatus) {
             if (
                 applicationStatus.status === InheritStatus.team &&
@@ -122,12 +112,12 @@ function useAppStatus(applicationKey: string): AppStatus {
             ) {
                 setState({
                     status: teamStatus,
-                    message: teamMessage,
+                    message: teamMessage || getMessage(message),
                 });
             } else if (applicationStatus.status !== InheritStatus.team) {
                 setState({
                     status: applicationStatus.status,
-                    message: applicationStatus.message,
+                    message: getMessage(message) || teamMessage,
                 });
             }
         } else {

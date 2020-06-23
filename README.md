@@ -1,6 +1,6 @@
 # appstatus-react
 
-Sanity-kobling for appstatus info
+Sanity-kobling for informasjon om en applikasjon er tilgjengelig, ustabil eller utilgjengelig.
 
 # Kjøre eksempel-app
 
