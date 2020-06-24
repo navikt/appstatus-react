@@ -29,7 +29,7 @@ export interface TeamState {
     error?: SanityError;
     isLoading: boolean;
 }
-function useTeamStatus(teamKey?: string): TeamState {
+function useGetTeamStatus(teamKey?: string): TeamState {
     const [status, setStatus] = useState<TeamStatus | undefined>();
     const [message, setMessage] = useState<SanityStatusMessage | undefined>();
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -82,12 +82,12 @@ function useTeamStatus(teamKey?: string): TeamState {
             if (!subscription.current) {
                 startSubscription(teamKey);
             }
-            if (subscription.current && prevTeamKey !== teamKey) {
+            if (prevTeamKey !== teamKey) {
                 stopSubscription();
                 startSubscription(teamKey);
             }
         }
-        if (teamKey === undefined) {
+        if (teamKey === undefined && subscription.current !== undefined) {
             stopSubscription();
         }
     }, [teamKey, prevTeamKey, error]);
@@ -95,4 +95,4 @@ function useTeamStatus(teamKey?: string): TeamState {
     return { status, message, isLoading, error };
 }
 
-export default useTeamStatus;
+export default useGetTeamStatus;

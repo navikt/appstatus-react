@@ -47,7 +47,7 @@ export interface AppStatus {
     error?: SanityError;
 }
 
-function useApplicationStatus(applicationKey: string): AppStatus {
+function useGetApplicationStatus(applicationKey: string): AppStatus {
     const [state, setState] = useState<ApplicationState>(defaultState);
     const [application, setApplication] = useState<ApplicationSanityQueryResult | undefined>();
     const [applicationTeam, setApplicationTeam] = useState<string>();
@@ -82,7 +82,6 @@ function useApplicationStatus(applicationKey: string): AppStatus {
             .subscribe(({ result }) => {
                 const appResult = (result as any) as ApplicationSanityQueryResult;
                 setApplication(appResult);
-                setApplicationTeam(appResult.team?.key);
             });
     };
 
@@ -90,6 +89,8 @@ function useApplicationStatus(applicationKey: string): AppStatus {
 
     const stopSubscription = () => {
         if (subscription.current && subscription.current.unsubscribe) {
+            console.log('Stop app sub');
+
             subscription.current.unsubscribe();
         }
     };
@@ -125,4 +126,4 @@ function useApplicationStatus(applicationKey: string): AppStatus {
     return { ...state, team: applicationTeam, isLoading, error };
 }
 
-export default useApplicationStatus;
+export default useGetApplicationStatus;

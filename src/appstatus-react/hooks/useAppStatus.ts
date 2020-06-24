@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Status, ApplicationStatus, ApplicationInheritTeamStatus, SanityError } from '../types';
 import { SanityStatusMessage } from '../types/sanityObjects';
-import useApplicationStatus from './useApplicationStatus';
-import useTeamStatus from './useTeamStatus';
+import useGetApplicationStatus from './useGetApplicationStatus';
+import useGetTeamStatus from './useGetTeamStatus';
 
 interface State {
     status: Status;
@@ -45,8 +45,9 @@ function useAppStatus(applicationKey: string): State & { isLoading: boolean } {
         team: appTeam,
         isLoading: appIsLoading,
         error: appError,
-    } = useApplicationStatus(applicationKey);
-    const { status: teamStatus, message: teamMessage, isLoading: teamIsLoading, error: teamError } = useTeamStatus(
+    } = useGetApplicationStatus(applicationKey);
+
+    const { status: teamStatus, message: teamMessage, isLoading: teamIsLoading, error: teamError } = useGetTeamStatus(
         appTeam
     );
 
