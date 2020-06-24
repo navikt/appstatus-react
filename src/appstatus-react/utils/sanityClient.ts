@@ -1,10 +1,11 @@
 import sanityClient from '@sanity/client';
+import { SanityConfig } from '../types';
 
-const appSanityClient = sanityClient({
-    projectId: 'ryujtq87',
-    dataset: 'production',
-    token: '',
-    useCdn: false,
-});
-
-export default appSanityClient;
+export const getAppSanityClient = ({ projectId, dataset, token = '' }: SanityConfig) => {
+    return sanityClient({
+        projectId,
+        dataset,
+        token,
+        useCdn: false,
+    });
+};

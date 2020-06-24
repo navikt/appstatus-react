@@ -13,6 +13,12 @@ export enum ApplicationInheritTeamStatus {
     'team' = 'team',
 }
 
+export interface SanityConfig {
+    projectId: string;
+    dataset: string;
+    token?: string;
+}
+
 export enum SanityMessageType {
     'info' = 'info',
     'warning' = 'warning',

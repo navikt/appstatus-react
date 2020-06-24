@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Status, ApplicationStatus, ApplicationInheritTeamStatus, SanityError } from '../types';
+import { Status, ApplicationStatus, ApplicationInheritTeamStatus, SanityError, SanityConfig } from '../types';
 import { SanityStatusMessage } from '../types/sanityObjects';
 import useGetApplicationStatus from './useGetApplicationStatus';
 import useGetTeamStatus from './useGetTeamStatus';
@@ -36,8 +36,9 @@ const getStateForApplication = (
     return defaultState;
 };
 
-function useAppStatus(applicationKey: string): State & { isLoading: boolean } {
+function useAppStatus(applicationKey: string, sanityConfig: SanityConfig): State & { isLoading: boolean } {
     const [state, setState] = useState<State>(defaultState);
+    const [config] = useState<SanityConfig>(sanityConfig);
 
     const {
         status: appStatus,
@@ -45,10 +46,11 @@ function useAppStatus(applicationKey: string): State & { isLoading: boolean } {
         team: appTeam,
         isLoading: appIsLoading,
         error: appError,
-    } = useGetApplicationStatus(applicationKey);
+    } = useGetApplicationStatus(applicationKey, config);
 
     const { status: teamStatus, message: teamMessage, isLoading: teamIsLoading, error: teamError } = useGetTeamStatus(
-        appTeam
+        appTeam,
+        config
     );
 
     const [isLoading, setIsLoading] = useState<boolean>(appIsLoading || teamIsLoading);

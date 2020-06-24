@@ -7,7 +7,10 @@ interface Props {
 }
 
 const ApplicationStatus = ({ applicationKey }: Props) => {
-    const { isLoading, status, message } = useAppStatus(applicationKey);
+    const { isLoading, status, message } = useAppStatus(applicationKey, {
+        projectId: 'ryujtq87',
+        dataset: 'production',
+    });
     if (isLoading) {
         return <div>Laster</div>;
     }

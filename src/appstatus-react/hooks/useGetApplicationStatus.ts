@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { Status, ApplicationStatus, SanityError } from '../types';
+import { Status, ApplicationStatus, SanityError, SanityConfig } from '../types';
 import { SanityStatusMessage } from '../types/sanityObjects';
 import { getMessage } from '../utils';
-import appSanityClient from '../utils/sanityClient';
+import { getAppSanityClient } from '../utils/sanityClient';
 import { usePrevious } from './usePrevious';
 
 const getApplicationDocumentStatusQuery = (key: string, team?: string): string => {
@@ -47,7 +47,7 @@ export interface AppStatus {
     error?: SanityError;
 }
 
-function useGetApplicationStatus(applicationKey: string): AppStatus {
+function useGetApplicationStatus(applicationKey: string, sanityConfig: SanityConfig): AppStatus {
     const [state, setState] = useState<ApplicationState>(defaultState);
     const [application, setApplication] = useState<ApplicationSanityQueryResult | undefined>();
     const [applicationTeam, setApplicationTeam] = useState<string>();
@@ -56,10 +56,10 @@ function useGetApplicationStatus(applicationKey: string): AppStatus {
 
     const subscription = useRef<any>();
 
-    async function fetch(key: string) {
+    async function fetch(key: string, config: SanityConfig) {
         setIsLoading(true);
         try {
-            const result: ApplicationSanityQueryResult[] = await appSanityClient.fetch(
+            const result: ApplicationSanityQueryResult[] = await getAppSanityClient(config).fetch(
                 getApplicationDocumentStatusQuery(key)
             );
             if (result.length === 1) {
@@ -76,8 +76,8 @@ function useGetApplicationStatus(applicationKey: string): AppStatus {
         }
     }
 
-    const startSubscription = (key: string) => {
-        subscription.current = appSanityClient
+    const startSubscription = (key: string, config: SanityConfig) => {
+        subscription.current = getAppSanityClient(config)
             .listen(getApplicationDocumentStatusQuery(key))
             .subscribe(({ result }) => {
                 const appResult = (result as any) as ApplicationSanityQueryResult;
@@ -99,18 +99,18 @@ function useGetApplicationStatus(applicationKey: string): AppStatus {
             return;
         }
         if (applicationKey && applicationKey !== prevApplicationKey) {
-            fetch(applicationKey);
+            fetch(applicationKey, sanityConfig);
             if (!subscription.current) {
-                startSubscription(applicationKey);
+                startSubscription(applicationKey, sanityConfig);
             } else {
                 stopSubscription();
-                startSubscription(applicationKey);
+                startSubscription(applicationKey, sanityConfig);
             }
         }
         if (applicationKey === undefined) {
             stopSubscription();
         }
-    }, [applicationKey, prevApplicationKey, error]);
+    }, [applicationKey, prevApplicationKey, error, sanityConfig]);
 
     useEffect(() => {
         if (application) {
