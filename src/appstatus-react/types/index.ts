@@ -2,7 +2,6 @@ import { SanityStatusMessage } from './sanityObjects';
 
 export enum Status {
     'normal' = 'normal',
-    'unstable' = 'unstable',
     'unavailable' = 'unavailable',
 }
 
