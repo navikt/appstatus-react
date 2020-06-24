@@ -89,8 +89,6 @@ function useGetApplicationStatus(applicationKey: string): AppStatus {
 
     const stopSubscription = () => {
         if (subscription.current && subscription.current.unsubscribe) {
-            console.log('Stop app sub');
-
             subscription.current.unsubscribe();
         }
     };
