@@ -45,3 +45,16 @@ export const getLocaleBlockContent = (
 
 export const getMessage = (messages?: SanityStatusMessage[]): SanityStatusMessage | undefined =>
     messages && messages.length === 1 ? messages[0] : undefined;
+
+export const sanityConfigIsValid = (config: any) => {
+    const sanityConfigPropIsValid = (prop: any) => prop !== undefined && typeof prop === 'string' && prop.length > 5;
+    try {
+        return (
+            config !== undefined &&
+            sanityConfigPropIsValid(config['projectId']) &&
+            sanityConfigPropIsValid(config['dataset'])
+        );
+    } catch {
+        return false;
+    }
+};

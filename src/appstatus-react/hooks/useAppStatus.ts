@@ -3,6 +3,7 @@ import { Status, ApplicationStatus, ApplicationInheritTeamStatus, SanityError, S
 import { SanityStatusMessage } from '../types/sanityObjects';
 import useGetApplicationStatus from './useGetApplicationStatus';
 import useGetTeamStatus from './useGetTeamStatus';
+import { sanityConfigIsValid } from '../utils';
 
 interface State {
     status: Status;
@@ -57,9 +58,13 @@ function useAppStatus(applicationKey: string, sanityConfig: SanityConfig): State
     const [error, setError] = useState<SanityError | undefined>(appError || teamError);
 
     useEffect(() => {
+        if (!sanityConfigIsValid(config)) {
+            setIsLoading(false);
+            return;
+        }
         setIsLoading(appIsLoading || teamIsLoading);
         setState(getStateForApplication(appStatus, appMessage, teamStatus, teamMessage));
-    }, [appStatus, appMessage, appTeam, teamMessage, teamStatus, appIsLoading, teamIsLoading]);
+    }, [appStatus, appMessage, appTeam, teamMessage, teamStatus, appIsLoading, teamIsLoading, config]);
 
     useEffect(() => {
         setError(appError || teamError);

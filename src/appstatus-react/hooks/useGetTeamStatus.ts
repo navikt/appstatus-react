@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { TeamStatus, SanityError, SanityConfig } from '../types';
+import { TeamStatus, SanityError, SanityConfig, Status } from '../types';
 import { SanityStatusMessage } from '../types/sanityObjects';
-import { getMessage } from '../utils';
+import { getMessage, sanityConfigIsValid } from '../utils';
 import { getAppSanityClient } from '../utils/sanityClient';
 import { usePrevious } from './usePrevious';
 
@@ -30,7 +30,7 @@ export interface TeamState {
     isLoading: boolean;
 }
 function useGetTeamStatus(teamKey: string | undefined, sanityConfig: SanityConfig): TeamState {
-    const [status, setStatus] = useState<TeamStatus | undefined>();
+    const [status, setStatus] = useState<TeamStatus>(Status.normal);
     const [message, setMessage] = useState<SanityStatusMessage | undefined>();
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<SanityError | undefined>();
@@ -49,7 +49,7 @@ function useGetTeamStatus(teamKey: string | undefined, sanityConfig: SanityConfi
             }
         } catch (error) {
             setError(error);
-            setStatus(undefined);
+            setStatus(Status.normal);
             setMessage(undefined);
         } finally {
             setIsLoading(false);
@@ -75,6 +75,10 @@ function useGetTeamStatus(teamKey: string | undefined, sanityConfig: SanityConfi
     const prevTeamKey = usePrevious(teamKey);
 
     useEffect(() => {
+        if (!sanityConfigIsValid(sanityConfig)) {
+            setIsLoading(false);
+            return;
+        }
         if (error) {
             stopSubscription();
             return;

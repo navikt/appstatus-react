@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Status, ApplicationStatus, SanityError, SanityConfig } from '../types';
 import { SanityStatusMessage } from '../types/sanityObjects';
-import { getMessage } from '../utils';
+import { getMessage, sanityConfigIsValid } from '../utils';
 import { getAppSanityClient } from '../utils/sanityClient';
 import { usePrevious } from './usePrevious';
 
@@ -94,6 +94,10 @@ function useGetApplicationStatus(applicationKey: string, sanityConfig: SanityCon
     };
 
     useEffect(() => {
+        if (!sanityConfigIsValid(sanityConfig)) {
+            setIsLoading(false);
+            return;
+        }
         if (error) {
             stopSubscription();
             return;
