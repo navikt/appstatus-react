@@ -9,6 +9,7 @@ const getTeamStatusQuery = (key: string): string => {
     return `*[_type == 'team' && key == "${key}"]{
         key,
         teamApplicationStatus,
+        liveUpdate,
         message,
       }`;
 };
@@ -16,6 +17,7 @@ const getTeamStatusQuery = (key: string): string => {
 interface TeamStatusResult {
     key: string;
     name: string;
+    liveUpdate?: boolean;
     teamApplicationStatus: {
         type: '_teamApplicationStatus';
         status: TeamStatus;
@@ -33,6 +35,7 @@ function useGetTeamStatus(teamKey: string | undefined, sanityConfig: SanityConfi
     const [status, setStatus] = useState<TeamStatus>(Status.normal);
     const [message, setMessage] = useState<SanityStatusMessage | undefined>();
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [liveUpdate, setLiveUpdate] = useState<boolean>();
     const [error, setError] = useState<SanityError | undefined>();
 
     const subscription = useRef<any>();
@@ -46,11 +49,13 @@ function useGetTeamStatus(teamKey: string | undefined, sanityConfig: SanityConfi
                 const team = result[0];
                 setStatus(team.teamApplicationStatus.status);
                 setMessage(getMessage(team.message));
+                setLiveUpdate(team.liveUpdate === true);
             }
         } catch (error) {
             setError(error);
             setStatus(Status.normal);
             setMessage(undefined);
+            setLiveUpdate(false);
         } finally {
             setIsLoading(false);
         }
@@ -66,13 +71,14 @@ function useGetTeamStatus(teamKey: string | undefined, sanityConfig: SanityConfi
             });
     };
 
-    const stopSubscription = () => {
+    const stopSubscription = (key: string) => {
         if (subscription.current && subscription.current.unsubscribe) {
             subscription.current.unsubscribe();
         }
     };
 
     const prevTeamKey = usePrevious(teamKey);
+    const prevLiveUpdate = usePrevious(liveUpdate);
 
     useEffect(() => {
         if (!sanityConfigIsValid(sanityConfig)) {
@@ -80,23 +86,31 @@ function useGetTeamStatus(teamKey: string | undefined, sanityConfig: SanityConfi
             return;
         }
         if (error) {
-            stopSubscription();
+            setLiveUpdate(false);
             return;
         }
         if (teamKey) {
             fetch(teamKey, sanityConfig);
-            if (!subscription.current) {
-                startSubscription(teamKey, sanityConfig);
-            }
-            if (prevTeamKey !== teamKey) {
-                stopSubscription();
-                startSubscription(teamKey, sanityConfig);
-            }
         }
         if (teamKey === undefined && subscription.current !== undefined) {
-            stopSubscription();
+            setLiveUpdate(false);
         }
     }, [teamKey, prevTeamKey, error, sanityConfig]);
+
+    useEffect(() => {
+        if (teamKey) {
+            if (liveUpdate === true) {
+                if (!subscription.current) {
+                    startSubscription(teamKey, sanityConfig);
+                } else {
+                    stopSubscription(teamKey);
+                    startSubscription(teamKey, sanityConfig);
+                }
+            } else {
+                stopSubscription(teamKey);
+            }
+        }
+    }, [liveUpdate, prevLiveUpdate, teamKey, prevTeamKey, sanityConfig]);
 
     return { status, message, isLoading, error };
 }

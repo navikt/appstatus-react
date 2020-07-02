@@ -11,6 +11,7 @@ const getApplicationDocumentStatusQuery = (key: string, team?: string): string =
         key,
         applicationStatus,
         message,
+        liveUpdate,
         name,
         team->{key}
       }`;
@@ -23,6 +24,7 @@ interface ApplicationSanityQueryResult {
         type: '_applicationStatus';
         status: ApplicationStatus;
     };
+    liveUpdate?: boolean;
     message: SanityStatusMessage[];
     team?: {
         key: string;
@@ -51,6 +53,7 @@ function useGetApplicationStatus(applicationKey: string, sanityConfig: SanityCon
     const [state, setState] = useState<ApplicationState>(defaultState);
     const [application, setApplication] = useState<ApplicationSanityQueryResult | undefined>();
     const [applicationTeam, setApplicationTeam] = useState<string>();
+    const [liveUpdate, setLiveUpdate] = useState<boolean>();
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<SanityError>();
 
@@ -66,11 +69,13 @@ function useGetApplicationStatus(applicationKey: string, sanityConfig: SanityCon
                 const appResult = result[0];
                 setApplication(appResult);
                 setApplicationTeam(appResult.team?.key);
+                setLiveUpdate(appResult.liveUpdate === true);
             }
         } catch (error) {
             setError(error);
             setApplication(undefined);
             setApplicationTeam(undefined);
+            setLiveUpdate(false);
         } finally {
             setIsLoading(false);
         }
@@ -86,6 +91,7 @@ function useGetApplicationStatus(applicationKey: string, sanityConfig: SanityCon
     };
 
     const prevApplicationKey = usePrevious(applicationKey);
+    const prevLiveUpdate = usePrevious(liveUpdate);
 
     const stopSubscription = () => {
         if (subscription.current && subscription.current.unsubscribe) {
@@ -99,22 +105,34 @@ function useGetApplicationStatus(applicationKey: string, sanityConfig: SanityCon
             return;
         }
         if (error) {
-            stopSubscription();
+            setLiveUpdate(false);
             return;
         }
         if (applicationKey && applicationKey !== prevApplicationKey) {
             fetch(applicationKey, sanityConfig);
-            if (!subscription.current) {
-                startSubscription(applicationKey, sanityConfig);
-            } else {
-                stopSubscription();
-                startSubscription(applicationKey, sanityConfig);
-            }
         }
         if (applicationKey === undefined) {
-            stopSubscription();
+            setLiveUpdate(false);
         }
     }, [applicationKey, prevApplicationKey, error, sanityConfig]);
+
+    useEffect(() => {
+        if (
+            applicationKey &&
+            (prevLiveUpdate !== liveUpdate || (applicationKey && applicationKey !== prevApplicationKey))
+        ) {
+            if (liveUpdate === true) {
+                if (!subscription.current) {
+                    startSubscription(applicationKey, sanityConfig);
+                } else {
+                    stopSubscription();
+                    startSubscription(applicationKey, sanityConfig);
+                }
+            } else {
+                stopSubscription();
+            }
+        }
+    }, [liveUpdate, prevLiveUpdate, applicationKey, prevApplicationKey, sanityConfig]);
 
     useEffect(() => {
         if (application) {
