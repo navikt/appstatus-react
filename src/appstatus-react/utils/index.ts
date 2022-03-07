@@ -52,7 +52,8 @@ export const sanityConfigIsValid = (config: any) => {
         return (
             config !== undefined &&
             sanityConfigPropIsValid(config['projectId']) &&
-            sanityConfigPropIsValid(config['dataset'])
+            sanityConfigPropIsValid(config['dataset']) &&
+            sanityConfigPropIsValid(config['apiVersion'])
         );
     } catch {
         return false;
