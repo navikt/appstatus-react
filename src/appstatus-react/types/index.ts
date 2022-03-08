@@ -16,6 +16,7 @@ export enum ApplicationInheritTeamStatus {
 export interface SanityConfig {
     projectId: string;
     dataset: string;
+    apiVersion: string;
     token?: string;
 }
 

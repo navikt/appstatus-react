@@ -85,7 +85,7 @@ function useGetApplicationStatus(applicationKey: string, sanityConfig: SanityCon
         subscription.current = getAppSanityClient(config)
             .listen(getApplicationDocumentStatusQuery(key))
             .subscribe(({ result }) => {
-                const appResult = (result as any) as ApplicationSanityQueryResult;
+                const appResult = result as any as ApplicationSanityQueryResult;
                 setApplication(appResult);
             });
     };

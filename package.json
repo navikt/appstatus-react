@@ -1,6 +1,6 @@
 {
     "name": "@navikt/appstatus-react",
-    "version": "2.0.0",
+    "version": "3.0.0",
     "private": false,
     "scripts": {
         "dev": "craco start",
