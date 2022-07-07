@@ -17,6 +17,7 @@ export interface SanityConfig {
     projectId: string;
     dataset: string;
     token?: string;
+    apiVersion?: string;
 }
 
 export enum SanityMessageType {

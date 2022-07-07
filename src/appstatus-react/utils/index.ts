@@ -9,6 +9,8 @@ import {
 } from '../types';
 import { SanityStatusMessage } from '../types/sanityObjects';
 
+export const DEFAULT_API_VERSION = '2021-01-12';
+
 const hasLocaleValue = (obj?: LocaleObject, locale: SanityLocale | string = sanityDefaultLocale): boolean =>
     obj !== undefined &&
     ((obj[locale] !== undefined && obj[locale] !== '') ||
